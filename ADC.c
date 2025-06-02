@@ -29,38 +29,42 @@ void ADC0_init_vcc(void)
     ADC0.COMMAND |= 1;                    // start running ADC
 }
  
-
+// reads the internal Vcc using the ADC
 uint16_t read_vcc(void)
 {
-    /* Porne?te conversia */
-    ADC0.COMMAND = ADC_STCONV_bm;
+	// start the ADC conversion
+	ADC0.COMMAND = ADC_STCONV_bm;
 
-    /* A?teapt? finalizarea conversiei */
-    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) {
-        ;
-    }
+	// wait for the conversion to complete
+	while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) {
+		;
+	}
 
-    /* Cur??? flag-ul de conversie complet? */
-    ADC0.INTFLAGS = ADC_RESRDY_bm;
+	// clear the conversion complete flag
+	ADC0.INTFLAGS = ADC_RESRDY_bm;
 
-    /* Returneaz? rezultatul */
-    return ADC0.RES;
+	// return the ADC result
+	return ADC0.RES;
 }
 
+// low-pass filter coefficient (value between 0 and 1)
+#define ALPHA_vcc 0.0005f
 
-#define ALPHA_vcc 0.0005f // Factor de atenuare (valoare între 0 ?i 1)
-float previous_vcc = 0; // Valoarea filtrat? anterioar?
+// previous filtered Vcc value
+float previous_vcc = 0;
 
+// applies a low-pass filter to smooth the ADC readings
 uint16_t applyLowPassFilter_vcc(uint16_t newValue) {
-	// Aplic?m filtrul pas-bas
-	previous_vcc = (ALPHA_vcc* newValue) + ((1.0f - ALPHA_vcc) * previous_vcc);
+	// apply low-pass filter
+	previous_vcc = (ALPHA_vcc * newValue) + ((1.0f - ALPHA_vcc) * previous_vcc);
 	
-	// Convertim rezultatul în uint16_t pentru a-l returna
+	// convert the filtered value back to uint16_t for return
 	return (uint16_t)previous_vcc;
 }
 
+// calculates the actual Vcc voltage based on the ADC result
 float calculate_vcc(uint16_t adc_result)
 {
-	uint16_t filtru = applyLowPassFilter_vcc(adc_result);
-    return (1.1 * 1024.0) / filtru;
+	uint16_t filtered = applyLowPassFilter_vcc(adc_result);
+	return (1.1 * 1024.0) / filtered;
 }
