@@ -10,20 +10,21 @@
 //#include <avr/interrupt.h>
 #include "TCA.h"
 
-void TCA0_init(void){
-  // Opre?te timerul înainte de configurare
-  TCA0.SINGLE.CTRLA &= ~TCA_SINGLE_ENABLE_bm;
-  
-  // Mod PWM - single slope, activare canal 2 (CMP2)
-  TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_SINGLESLOPE_gc | TCA_SINGLE_CMP2EN_bm;
-  
-  // Seteaz? perioada ?i duty cycle
-  TCA0.SINGLE.PER = PERIOD_VALUE;        // Perioad? PWM
-  TCA0.SINGLE.CMP2 = DUTY_CYCLE_VALUE;    // Duty cycle
-  
-  // Porne?te timerul, f?r? divizor (CLK_PER direct)
-  TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
+void TCA0_init(void) {
+	// stop the timer before configuration
+	TCA0.SINGLE.CTRLA &= ~TCA_SINGLE_ENABLE_bm;
+	
+	// set PWM mode to single slope, enable channel 2 (CMP2)
+	TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_SINGLESLOPE_gc | TCA_SINGLE_CMP2EN_bm;
+	
+	// set the PWM period and duty cycle
+	TCA0.SINGLE.PER = PERIOD_VALUE;       // PWM period
+	TCA0.SINGLE.CMP2 = DUTY_CYCLE_VALUE;  // PWM duty cycle
+	
+	// start the timer with no prescaler (CLK_PER directly)
+	TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }
+
 
 void PORT_init(void)
 {
