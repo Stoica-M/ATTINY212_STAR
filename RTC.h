@@ -2,7 +2,7 @@
  * RTC.h
  *
  * Created: 1/2/2025 1:30:08 PM
- *  Author: stoic
+ *  Author: stoica
  */ 
 
 
