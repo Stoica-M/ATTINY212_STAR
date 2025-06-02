@@ -2,7 +2,7 @@
  * ADC.h
  *
  * Created: 1/2/2025 8:05:27 PM
- *  Author: stoic
+ *  Author: stoica
  */ 
 
 
