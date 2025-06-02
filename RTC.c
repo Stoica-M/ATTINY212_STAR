@@ -71,8 +71,8 @@ ISR(RTC_PIT_vect)
 	RTC.PITINTFLAGS = RTC_PI_bm;
 	//RTC_count++;
 	RTC_time++;
-	//if(RTC_time > 86400){RTC_time=0;}  // reset la o zi;
-	if(RTC_time > 86400){RTC_time=0;}  // reset la 12 ore
+	//if(RTC_time > 86400){RTC_time=0;}  // reset at one day;
+	if(RTC_time > 86400){RTC_time=0;}  // reset at 12 hour
 }
 
 void SLPCTRL_init(void)
