@@ -2,10 +2,10 @@
  * 212 Steluta.c
  *
  * Created: 1/6/2025 8:53:49 PM
- * Author : stoic
- */ 
+ * Author : stoica
+ */
 
-#define  F_CPU 3333333UL
+#define F_CPU 3333333UL
 #include <avr/io.h>
 
 #include <avr/interrupt.h>
@@ -16,82 +16,79 @@
 #include "RTC.h"
 #include "ADC.h"
 
-// PA6 buton
-// PA2 mosfet
+// PA6 - button
+// PA2 - mosfet control
 
 
-uint16_t brightness = 0;    // how bright the LED is
-uint16_t fadeAmount = 1;    // how many points to fade the LED by
+uint16_t brightness = 0;    // current LED brightness
+uint16_t fadeAmount = 1;    // step size for fading effect
 
-   uint16_t durata_functionare = 60*60; // ore * min * sec
-   
-   float voltaj_bat,sample;  uint16_t bat;
+uint16_t runtime_duration = 60 * 60; // operating time in seconds (hours * min * sec)
 
-//uint8_t cicluri_RTC= 6;
-
-
+float battery_voltage, sample;
+uint16_t bat_adc;
 
 void disable();
 
 int main(void)
 {
-   TCA0_init();
-   RTC_init();
-   SLPCTRL_init();
-   ADC0_init_vcc();
+    TCA0_init();
+    RTC_init();
+    SLPCTRL_init();
+    ADC0_init_vcc();
 
+    // configure PA2 as output (controls the MOSFET)
+    PORTA.DIRSET = PIN2_bm;
+    sei();
 
-
-   PORTA.DIRSET = PIN2_bm; // iesire mosfet
-   sei();
-   
-   
-   
     while (1) 
     {
-		
-			// o zi 1440 min -> 86.400 sec
-			// 6 ore 360 min -> 21.600 sec
+        // one day = 1440 minutes -> 86,400 seconds
+        // 6 hours = 360 minutes -> 21,600 seconds
 
-			// pentru a functiona doar in intervalul ales de timp
-			// RTC_time se reseteaza dupa 24h
-			if( (RTC_time > 0) && (RTC_time < durata_functionare) )
-			{
-				bat = read_vcc();
-				voltaj_bat = calculate_vcc(bat);
+        // this block ensures operation only during the selected interval
+        // RTC_time resets every 24h
+        if ((RTC_time > 0) && (RTC_time < runtime_duration))
+        {
+            bat_adc = read_vcc();
+            battery_voltage = calculate_vcc(bat_adc);
 
-				if (voltaj_bat>3.00)
-				{
-					sleep_disable();
-					TCA0.SINGLE.CTRLB |= TCA_SINGLE_CMP2EN_bm;
-					TCA0.SINGLE.CMP2 = brightness;
-					// change the brightness for next time through the loop:
-					brightness = brightness + fadeAmount;
-      if(brightness==0){_delay_ms(1000);}
-					// reverse the direction of the fading at the ends of the fade:
-					if (brightness <= 0 || brightness >= PERIOD_VALUE) {
-						fadeAmount = -fadeAmount;
-						
-					}
-					// wait for 30 milliseconds to see the dimming effect
-					_delay_ms(5);		
-		
-				} // Vbat > 3.0
-		else{  disable();	}
-			
-			} // durata functionare
-		else{	disable();	}		
-			
-			
-    } // while(1)
-} // main
+            if (battery_voltage > 3.00)
+            {
+                sleep_disable();
+                TCA0.SINGLE.CTRLB |= TCA_SINGLE_CMP2EN_bm;
+                TCA0.SINGLE.CMP2 = brightness;
+
+                // change the brightness for next iteration
+                brightness = brightness + fadeAmount;
+
+                if (brightness == 0) {
+                    _delay_ms(1000);
+                }
+
+                // reverse fading direction at min/max limits
+                if (brightness <= 0 || brightness >= PERIOD_VALUE) {
+                    fadeAmount = -fadeAmount;
+                }
+
+                // wait 5 ms to make the fading visible
+                _delay_ms(5);		
+            }
+            else {
+                disable();
+            }
+        }
+        else {
+            disable();
+        }
+    }
+}
 
 void disable()
 {
-	TCA0.SINGLE.CTRLB &=~ TCA_SINGLE_CMP2EN_bm;
-	PORTA.OUTCLR = PIN2_bm;
-	  sleep_mode();
-	  sleep_enable();
-	  sleep_cpu();
+    TCA0.SINGLE.CTRLB &= ~TCA_SINGLE_CMP2EN_bm;
+    PORTA.OUTCLR = PIN2_bm;
+    sleep_mode();
+    sleep_enable();
+    sleep_cpu();
 }
-
