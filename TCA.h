@@ -2,7 +2,7 @@
  * TCA.h
  *
  * Created: 07/04/2024 15:11:32
- *  Author: stoica
+ *  Author: stoicaa
  */ 
 
 
@@ -13,8 +13,8 @@
 
 
 
-#define PERIOD_VALUE     0x03FF   // Perioad? PWM
-#define DUTY_CYCLE_VALUE 0x00FF   // Jumatate din perioada = 50%
+#define PERIOD_VALUE     0x03FF   //  
+#define DUTY_CYCLE_VALUE 0x00FF   // 
 
 
 
